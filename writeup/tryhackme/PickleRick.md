@@ -1,9 +1,9 @@
 ---
-title: "tryhackme - "
-author: Ryan Kozak
+title: "tryhackme - picklerick"
+author: 0r10nh@ck
 date: "2021-06-15"
 subject: "CTF Writeup Template"
-keywords: [HTB, CTF, Hack The Box, Security]
+keywords: [CTF, tryhackme, Security]
 lang: "en"
 titlepage: true
 title-page-color: "141d2b"
@@ -14,8 +14,13 @@ toc-own-page: true
 
 ...
 
+<= [HOME](./../../index.md)
 
-*Everything below is just random stuff for the sake of example.*
+# Pickle Rick
+
+![pick](https://tryhackme-images.s3.amazonaws.com/room-icons/47d2d3ade1795f81a155d0aca6e4da96.jpeg)
+
+> https://tryhackme.com/room/picklerick
 
 # Information Gathering
 

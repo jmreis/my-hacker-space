@@ -8,9 +8,17 @@
 
 # Table of content
 
-- Posts
-- Writeups
-    - tryhackme - [picklerick](./writeup/tryhackme/PickleRick.md)
-    - tryhackme - [rootme](./writeup/tryhackme/)
+## Posts
+
+
+
+## Writeups
+
+### tryhackme 
+
+- [Pickle Rick](./writeup/tryhackme/PickleRick.md) - (https://tryhackme.com/room/picklerick)
+
 
 ---
+<img src="https://tryhackme-badges.s3.amazonaws.com/forray.png" alt="TryHackMe">
+
