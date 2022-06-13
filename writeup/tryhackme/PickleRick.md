@@ -20,87 +20,147 @@ toc-own-page: true
 
 ![pick](https://tryhackme-images.s3.amazonaws.com/room-icons/47d2d3ade1795f81a155d0aca6e4da96.jpeg)
 
+A Rick and Morty CTF. Help turn Rick back into a human!
+
 > https://tryhackme.com/room/picklerick
 
 # Information Gathering
 
-## Nmap
+My first step was to check the application's source code.
+Found the following comment:
+
+```html
+<!--
+
+     Note to self, remember username!
+
+     Username: R1ckRul3s
+
+   -->
+```
+
+### Nmap
+
 We begin our reconnaissance by running an Nmap scan checking default scripts and testing for vulnerabilities.
 
 ```console
-x@wartop:~$ nmap -sVC 192.168.100.6
+$ nmap -v 10.10.133.253             
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-06-11 13:09 -03
+Initiating Ping Scan at 13:09
+Scanning 10.10.133.253 [2 ports]
+Completed Ping Scan at 13:09, 0.25s elapsed (1 total hosts)
+Initiating Parallel DNS resolution of 1 host. at 13:09
+Completed Parallel DNS resolution of 1 host. at 13:09, 0.16s elapsed
+Initiating Connect Scan at 13:09
+Scanning 10.10.133.253 [1000 ports]
+Discovered open port 22/tcp on 10.10.133.253
+Discovered open port 80/tcp on 10.10.133.253
+Increasing send delay for 10.10.133.253 from 0 to 5 due to 31 out of 101 dropped probes since last increase.
+Increasing send delay for 10.10.133.253 from 5 to 10 due to max_successful_tryno increase to 4
+Increasing send delay for 10.10.133.253 from 10 to 20 due to max_successful_tryno increase to 5
+Increasing send delay for 10.10.133.253 from 20 to 40 due to max_successful_tryno increase to 6
+Completed Connect Scan at 13:10, 54.30s elapsed (1000 total ports)
+Nmap scan report for 10.10.133.253
+Host is up (0.24s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
 
-Starting Nmap 7.01 ( https://nmap.org ) at 2019-08-11 08:57 PDT
-Nmap scan report for 192.168.100.6 (192.168.100.1)
-Host is up (0.022s latency).
-Not shown: 996 closed ports
-PORT    STATE SERVICE  VERSION
-22/tcp  open  ssh      OpenSSH 7.9 (protocol 2.0)
-53/tcp  open  domain
-81/tcp  open  http     Apache httpd
-|_http-server-header: Apache
-444/tcp open  ssl/http Apache httpd
-|_http-server-header: Apache
-| ssl-cert: Subject: commonName=192.168.100.6
-| Not valid before: 2018-07-06T14:40:08
-|_Not valid after:  4756-06-01T14:40:08
+Read data files from: /usr/bin/../share/nmap
+Nmap done: 1 IP address (1 host up) scanned in 55.00 seconds
 
+```
+
+Scanning the specifics ports:
+
+```console
+$ nmap -v -sV -p 22,80 10.10.133.253
+Starting Nmap 7.92 ( https://nmap.org ) at 2022-06-11 13:11 -03
+NSE: Loaded 45 scripts for scanning.
+Initiating Ping Scan at 13:11
+Scanning 10.10.133.253 [2 ports]
+Completed Ping Scan at 13:11, 0.26s elapsed (1 total hosts)
+Initiating Parallel DNS resolution of 1 host. at 13:11
+Completed Parallel DNS resolution of 1 host. at 13:11, 0.11s elapsed
+Initiating Connect Scan at 13:11
+Scanning 10.10.133.253 [2 ports]
+Discovered open port 22/tcp on 10.10.133.253
+Discovered open port 80/tcp on 10.10.133.253
+Completed Connect Scan at 13:11, 0.25s elapsed (2 total ports)
+Initiating Service scan at 13:11
+Scanning 2 services on 10.10.133.253
+Completed Service scan at 13:11, 6.58s elapsed (2 services on 1 host)
+NSE: Script scanning 10.10.133.253.
+Initiating NSE at 13:11
+Completed NSE at 13:11, 1.23s elapsed
+Initiating NSE at 13:11
+Completed NSE at 13:11, 1.01s elapsed
+Nmap scan report for 10.10.133.253
+Host is up (0.26s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.6 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Read data files from: /usr/bin/../share/nmap
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 201.22 seconds
+Nmap done: 1 IP address (1 host up) scanned in 10.23 seconds
 ```
-From the above output we can see that ports, **22**, **53**, **81**, and **444** are the ports open. This is just an example to show code formatting so who cares.
+From the above output we can see that ports, **22**, and **80** are the ports open. This is just an example to show code formatting so who cares.
 
-Look  here's an image of my website, this is how you format an image.
+### Content Discovery
 
-![My Website](./images/ryankozak.com.png)
-\ **Figure 1:** My Website
+Using dirsearch:
 
+```console
+$ dirsearch -u http://10.10.133.253 
 
-![Github](./images/github.png)
-\ **Figure 2:** Github Profile
+  _|. _ _  _  _  _ _|_    v0.4.2
+ (_||| _) (/_(_|| (_| )
 
-Maybe we want to show some python code too, to let's take a look at a snipped from [codewars](https://www.codewars.com) to format time as human readable.
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 30 | Wordlist size: 10991
 
-```python
-def make_readable(seconds):        
+Output File: /usr/share/sniper/plugins/dirsearch/reports/10.10.133.253/_22-06-11_13-30-52.txt
 
-    hours = seconds / 60**2
-    minutes = seconds/60 - hours*60
-    seconds = seconds - hours*(60**2) - minutes*60
+Error Log: /usr/share/sniper/plugins/dirsearch/logs/errors-22-06-11_13-30-52.log
 
-    return '%02d:%02d:%02d' % (hours, minutes, seconds)
+Target: http://10.10.133.253/
+
+[13:30:52] Starting: 
+[13:30:56] 400 -  305B  - /.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd
+[13:31:05] 403 -  299B  - /.ht_wsr.txt
+[13:31:05] 403 -  303B  - /.htaccess_extra
+[13:31:05] 403 -  301B  - /.htaccessOLD2
+[13:31:05] 403 -  300B  - /.htaccessBAK
+[13:31:05] 403 -  300B  - /.htaccessOLD
+[13:31:05] 403 -  300B  - /.htaccess_sc
+[13:31:05] 403 -  302B  - /.htaccess_orig
+[13:31:05] 403 -  292B  - /.htm
+[13:31:05] 403 -  293B  - /.html
+[13:31:05] 403 -  302B  - /.htaccess.orig
+[13:31:05] 403 -  304B  - /.htaccess.sample
+[13:31:05] 403 -  302B  - /.htaccess.save
+[13:31:05] 403 -  302B  - /.htaccess.bak1
+[13:31:05] 403 -  299B  - /.httr-oauth
+[13:31:05] 403 -  298B  - /.htpasswds
+[13:31:05] 403 -  302B  - /.htpasswd_test
+[13:31:10] 403 -  292B  - /.php
+[13:31:10] 403 -  293B  - /.php3
+[13:32:09] 200 -    2KB - /assets/
+[13:32:09] 301 -  315B  - /assets  ->  http://10.10.133.253/assets/
+[13:32:18] 400 -  305B  - /cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd
+[13:32:49] 200 -    1KB - /index.html
+[13:32:58] 200 -  882B  - /login.php
+[13:33:30] 200 -   17B  - /robots.txt
+[13:33:33] 403 -  302B  - /server-status/
+[13:33:33] 403 -  301B  - /server-status
+
+Task Completed
+
 ```
-
-
-# Exploitation  
-
-In order to gain our initial foothold we need to blablablabla. Here's another code snippet just for fun.
-
-```php
-function sqInRect($lng, $wdth) {
-
-    if($lng == $wdth) {
-      return null;
-    }
-
-    $squares = array();
-
-    while($lng*$wdth >= 1) {
-      if($lng>$wdth) {
-        $base = $wdth;
-        $lng = $lng - $base;
-      }
-      else {
-        $base = $lng;
-        $wdth = $wdth - $base;
-      }
-      array_push($squares, $base);
-    }
-    return $squares;
-}
-```
-Above is the php code for the **Rectangle into Squares** kata solution from codewars.
-
+---
 
 ## User Flag
 
